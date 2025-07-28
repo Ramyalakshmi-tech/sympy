@@ -1624,6 +1624,15 @@ class Rational(Number):
 
             q = 1
             gcd = 1
+        # Special case: handle string inputs for both p and q
+        elif isinstance(p, str) and isinstance(q, str):
+            try:
+                fp = fractions.Fraction(p)
+                fq = fractions.Fraction(q)
+                return Rational(fp.numerator * fq.denominator, fp.denominator * fq.numerator, 1)
+            except ValueError:
+                # Fall back to normal handling if conversion fails
+                pass
 
         # if both numerator and denominator are string inputs, parse them as Fractions
         if isinstance(p, str) and isinstance(q, str):
@@ -1640,6 +1649,14 @@ class Rational(Number):
             p = int(p)
 
         if not isinstance(q, SYMPY_INTS):
+            # Handle case when both p and q are strings representing numbers
+            if isinstance(p, Rational) and isinstance(q, str):
+                try:
+                    fq = fractions.Fraction(q)
+                    return Rational(p.p * fq.denominator, p.q * fq.numerator, 1)
+                except ValueError:
+                    pass
+            
             q = Rational(q)
             p *= q.q
             q = q.p
