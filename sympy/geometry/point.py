@@ -289,8 +289,12 @@ class Point(GeometryEntity):
         coords = [simplify(x*factor) for x in self.args]
         return Point(coords, evaluate=False)
 
+<<<<<<< ours
     def __rmul__(self, factor):
         return self*factor
+=======
+    __rmul__ = __mul__
+>>>>>>> theirs
 
     def __neg__(self):
         """Negate the point."""
