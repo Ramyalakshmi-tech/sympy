@@ -105,6 +105,8 @@ class Point(GeometryEntity):
 
     is_Point = True
 
+    _op_priority = 11.0
+
     def __new__(cls, *args, **kwargs):
         evaluate = kwargs.get('evaluate', global_evaluate[0])
         on_morph = kwargs.get('on_morph', 'ignore')
@@ -216,6 +218,15 @@ class Point(GeometryEntity):
         try:
             s, o = Point._normalize_dimension(self, Point(other, evaluate=False))
         except TypeError:
+            from sympy.core.mul import Mul
+            if isinstance(other, Mul) and len(other.args) == 2:
+                # Try to handle the case where other is a Mul like 2*Point(1, 1)
+                if isinstance(other.args[1], Point):
+                    factor, point = other.args
+                    return self + point * factor
+                elif isinstance(other.args[0], Point):
+                    point, factor = other.args
+                    return self + point * factor
             raise GeometryError("Don't know how to add {} and a Point object".format(other))
 
         coords = [simplify(a + b) for a, b in zip(s, o)]
@@ -278,10 +289,33 @@ class Point(GeometryEntity):
         coords = [simplify(x*factor) for x in self.args]
         return Point(coords, evaluate=False)
 
+    def __rmul__(self, factor):
+        return self*factor
+
     def __neg__(self):
         """Negate the point."""
         coords = [-x for x in self.args]
         return Point(coords, evaluate=False)
+
+    def __rmul__(self, factor):
+        """Multiply a factor by this point.
+
+        This method is called when a number (or other object) is multiplied
+        by a Point, as in 2 * Point(1, 2).
+
+        Examples
+        ========
+
+        >>> from sympy.geometry import Point
+        >>> 2 * Point(1, 2)
+        Point2D(2, 4)
+
+        See Also
+        ========
+
+        sympy.geometry.point.Point.__mul__
+        """
+        return self.__mul__(factor)
 
     def __sub__(self, other):
         """Subtract two points, or subtract a factor from this point's
