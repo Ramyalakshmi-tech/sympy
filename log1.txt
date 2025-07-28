@@ -1,0 +1,79 @@
+(
+  cd "$(git rev-parse --show-toplevel)"
+  git apply --3way <<'EOF'
+diff --git a/sympy/core/numbers.py b/sympy/core/numbers.py
+index 52f7ea45ad..e0398146a7 100644
+--- a/sympy/core/numbers.py
++++ b/sympy/core/numbers.py
+@@ -1624,6 +1624,15 @@ def __new__(cls, p, q=None, gcd=None):
+ 
+             q = 1
+             gcd = 1
++        # Special case: handle string inputs for both p and q
++        elif isinstance(p, str) and isinstance(q, str):
++            try:
++                fp = fractions.Fraction(p)
++                fq = fractions.Fraction(q)
++                return Rational(fp.numerator * fq.denominator, fp.denominator * fq.numerator, 1)
++            except ValueError:
++                # Fall back to normal handling if conversion fails
++                pass
+ 
+         if not isinstance(p, SYMPY_INTS):
+             p = Rational(p)
+@@ -1633,6 +1642,14 @@ def __new__(cls, p, q=None, gcd=None):
+             p = int(p)
+ 
+         if not isinstance(q, SYMPY_INTS):
++            # Handle case when both p and q are strings representing numbers
++            if isinstance(p, Rational) and isinstance(q, str):
++                try:
++                    fq = fractions.Fraction(q)
++                    return Rational(p.p * fq.denominator, p.q * fq.numerator, 1)
++                except ValueError:
++                    pass
++            
+             q = Rational(q)
+             p *= q.q
+             q = q.p
+diff --git a/sympy/core/tests/test_numbers.py b/sympy/core/tests/test_numbers.py
+index 8baf408933..0f156a463c 100644
+--- a/sympy/core/tests/test_numbers.py
++++ b/sympy/core/tests/test_numbers.py
+@@ -349,6 +349,9 @@ def test_Rational_new():
+     assert Rational('1/1 234') == Rational(1, 1234)
+     assert Rational(-1, 0) is S.ComplexInfinity
+     assert Rational(1, 0) is S.ComplexInfinity
++    # Test string inputs for both numerator and denominator
++    assert Rational('0.5', '100') == Rational(1, 200)
++    assert Rational('0.1', '10') == Rational(1, 100)
+     # Make sure Rational doesn't lose precision on Floats
+     assert Rational(pi.evalf(100)).evalf(100) == pi.evalf(100)
+     raises(TypeError, lambda: Rational('3**3'))
+diff --git a/test_rational_bug.py b/test_rational_bug.py
+new file mode 100644
+index 0000000000..8d563494d0
+--- /dev/null
++++ b/test_rational_bug.py
+@@ -0,0 +1,17 @@
++#!/usr/bin/env python3
++from sympy.core.numbers import Rational
++
++# Test case 1: Using strings - reported as bug
++r1 = Rational('0.5', '100')
++print(f"Rational('0.5', '100') = {r1}")
++
++# Test case 2: Using floats/ints - correct behavior
++r2 = Rational(0.5, 100)
++print(f"Rational(0.5, 100) = {r2}")
++
++# Test with similar cases
++r3 = Rational('0.1', '10')
++print(f"Rational('0.1', '10') = {r3}")
++
++r4 = Rational(0.1, 10)
++print(f"Rational(0.1, 10) = {r4}")
+\ No newline at end of file
+
+EOF
+)
