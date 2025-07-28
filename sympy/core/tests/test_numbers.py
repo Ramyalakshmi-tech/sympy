@@ -346,10 +346,15 @@ def test_Rational_new():
     assert Rational('1/1 234') == Rational(1, 1234)
     assert Rational(-1, 0) is S.ComplexInfinity
     assert Rational(1, 0) is S.ComplexInfinity
+    # Test string inputs for both numerator and denominator
+    assert Rational('0.5', '100') == Rational(1, 200)
+    assert Rational('0.1', '10') == Rational(1, 100)
     # Make sure Rational doesn't lose precision on Floats
     assert Rational(pi.evalf(100)).evalf(100) == pi.evalf(100)
     raises(TypeError, lambda: Rational('3**3'))
     raises(TypeError, lambda: Rational('1/2 + 2/3'))
+    # ensure parsing of numerator and denominator when both are strings
+    assert Rational('0.5', '100') == Rational(1, 200)
 
     # handle fractions.Fraction instances
     try:
