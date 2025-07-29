@@ -354,6 +354,12 @@ def test_arguments():
     assert a/10.0 == Point(0, 0.1, evaluate=False)
     a = Point(0, 1)
     assert a*10.0 == Point(0.0, 10.0, evaluate=False)
+    # reversed multiplication should behave the same
+    assert 10.0*a == a*10.0
+    # test addition with reversed multiplication yields same result as forward multiplication
+    p1 = Point(0, 0)
+    p2 = Point(1, 1)
+    assert p1 + p2*2.0 == p1 + 2.0*p2
 
     # test evaluate=False when changing dimensions
     u = Point(.1, .2, evaluate=False)
