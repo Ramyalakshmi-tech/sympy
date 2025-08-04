@@ -118,7 +118,18 @@ class Mod(Function):
                 return cls(net, q)
 
         elif isinstance(p, Mul):
-            # separating into modulus and non modulus
+            if q.is_Integer:
+                c, rest = p.as_coeff_Mul()
+                if c.is_Integer:
+                    c1 = c % q
+                    if c1 == 0:
+                        return S.Zero
+                    if c1 != c:
+                        if rest is S.One:
+                            p = c1
+                        else:
+                            p = c1*rest
+                        return cls(p, q)
             both_l = non_mod_l, mod_l = [], []
             for arg in p.args:
                 both_l[isinstance(arg, cls)].append(arg)
