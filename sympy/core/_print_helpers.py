@@ -17,6 +17,10 @@ class Printable:
     This also adds support for LaTeX printing in jupyter notebooks.
     """
 
+    # Avoid adding an instance __dict__ via this mixin; subclasses that define
+    # __slots__ (e.g. Basic -> Symbol) should remain slot-only.
+    __slots__ = ()
+
     # Note, we always use the default ordering (lex) in __str__ and __repr__,
     # regardless of the global setting. See issue 5487.
     def __str__(self):
