@@ -5,6 +5,11 @@ from sympy.core.symbol import uniquely_named_symbol, _symbol, Str
 from sympy.testing.pytest import raises
 from sympy.core.symbol import disambiguate
 
+
+def test_symbol_no_dict():
+    s = Symbol('s')
+    assert not hasattr(s, '__dict__')
+
 def test_Str():
     a1 = Str('a')
     a2 = Str('a')
