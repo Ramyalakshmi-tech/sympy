@@ -305,6 +305,8 @@ _not_in_mpmath = 'log1p log2'.split()
 _in_mpmath = [(k, v) for k, v in _known_functions_math.items() if k not in _not_in_mpmath]
 _known_functions_mpmath = dict(_in_mpmath, **{
     'sign': 'sign',
+    'RisingFactorial': 'rf',
+    'FallingFactorial': 'ff',
 })
 _known_constants_mpmath = {
     'Pi': 'pi'
@@ -331,13 +333,19 @@ class MpmathPrinter(PythonCodePrinter):
         args = str(tuple(map(int, e._mpf_)))
         return '{func}({args})'.format(func=self._module_format('mpmath.mpf'), args=args)
 
-    def _print_Rational(self, expr):
-        mpf = self._module_format('mpmath.mpf')
-        p, q = expr.p, expr.q
-        if q == 1:
-            return '{0}({1})'.format(mpf, p)
-        return '({0}({1})/{0}({2}))'.format(mpf, p, q)
+    def _print_Rational(self, e):
+        """Print Rational numbers with mpmath.mpf to preserve precision.
 
+        When using lambdify with modules='mpmath', plain ``p/q`` would be
+        evaluated by Python with binary float precision. Wrapping both
+        numerator and denominator with mpmath.mpf ensures the division is
+        carried out in mpmath with the active precision.
+        """
+        if e.q == 1:
+            # Keep integers as plain ints to avoid unnecessary mpf calls.
+            return str(e.p)
+        mpf = self._module_format('mpmath.mpf')
+        return '{0}({1})/{0}({2})'.format(mpf, e.p, e.q)
 
     def _print_uppergamma(self, e):
         return "{0}({1}, {2}, {3})".format(
@@ -400,7 +408,7 @@ class NumPyPrinter(PythonCodePrinter):
         "General sequence printer: converts to tuple"
         # Print tuples here instead of lists because numba supports
         #     tuples in nopython mode.
-        delimite.get('delimiter', ', ')
+        delimiter = ', '
         return '({},)'.format(delimiter.join(self._print(item) for item in seq))
 
     def _print_MatMul(self, expr):
