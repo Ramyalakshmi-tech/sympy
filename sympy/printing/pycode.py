@@ -330,13 +330,14 @@ class MpmathPrinter(PythonCodePrinter):
         # Remove 'mpz' if gmpy is installed.
         args = str(tuple(map(int, e._mpf_)))
         return '{func}({args})'.format(func=self._module_format('mpmath.mpf'), args=args)
-
-    def _print_Rational(self, expr):
-        mpf = self._module_format('mpmath.mpf')
-        p, q = expr.p, expr.q
-        if q == 1:
-            return '{0}({1})'.format(mpf, p)
-        return '({0}({1})/{0}({2}))'.format(mpf, p, q)
+        
+    def _print_Rational(self, e):
+        # Wrap Rational numbers with mpmath.mpf to maintain high precision
+        return '{func}({p})/{func}({q})'.format(
+            func=self._module_format('mpmath.mpf'),
+            p=self._print(e.p),
+            q=self._print(e.q)
+        )
 
 
     def _print_uppergamma(self, e):
