@@ -332,11 +332,16 @@ class MpmathPrinter(PythonCodePrinter):
         return '{func}({args})'.format(func=self._module_format('mpmath.mpf'), args=args)
 
     def _print_Rational(self, expr):
+<<<<<<< ours
         mpf = self._module_format('mpmath.mpf')
         p, q = expr.p, expr.q
         if q == 1:
             return '{0}({1})'.format(mpf, p)
         return '({0}({1})/{0}({2}))'.format(mpf, p, q)
+=======
+        p, q = int(expr.p), int(expr.q)
+        return '{func}({p})/{q}'.format(func=self._module_format('mpmath.mpf'), p=p, q=q)
+>>>>>>> theirs
 
 
     def _print_uppergamma(self, e):
