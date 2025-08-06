@@ -493,6 +493,11 @@ def test_Rational():
     assert sstr(Symbol("x")**Rational(2, 3), sympy_integers=True) == "x**(S(2)/3)"
 
 
+def test_sympy_integers_subexpr():
+    assert sstr(Eq(x, S(1)/2), sympy_integers=True) == 'Eq(x, S(1)/2)'
+    assert sstr(Limit(x, x, S(1)/2), sympy_integers=True) == 'Limit(x, x, S(1)/2)'
+
+
 def test_Float():
     # NOTE dps is the whole number of decimal digits
     assert str(Float('1.23', dps=1 + 2)) == '1.23'
