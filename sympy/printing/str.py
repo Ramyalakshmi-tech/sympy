@@ -141,7 +141,7 @@ class StrPrinter(Printer):
         return 'E'
 
     def _print_ExprCondPair(self, expr):
-        return '(%s, %s)' % (expr.expr, expr.cond)
+        return "(%s, %s)" % (self._print(expr.expr), self._print(expr.cond))
 
     def _print_FiniteSet(self, s):
         s = sorted(s, key=default_sort_key)
@@ -204,10 +204,10 @@ class StrPrinter(Printer):
     def _print_Lambda(self, obj):
         args, expr = obj.args
         if len(args) == 1:
-            return "Lambda(%s, %s)" % (args.args[0], expr)
+            return "Lambda(%s, %s)" % (self._print(args.args[0]), self._print(expr))
         else:
             arg_string = ", ".join(self._print(arg) for arg in args)
-            return "Lambda((%s), %s)" % (arg_string, expr)
+            return "Lambda((%s), %s)" % (arg_string, self._print(expr))
 
     def _print_LatticeOp(self, expr):
         args = sorted(expr.args, key=default_sort_key)
@@ -215,6 +215,9 @@ class StrPrinter(Printer):
 
     def _print_Limit(self, expr):
         e, z, z0, dir = expr.args
+        e = self._print(e)
+        z = self._print(z)
+        z0 = self._print(z0)
         if str(dir) == "+":
             return "Limit(%s, %s, %s)" % (e, z, z0)
         else:
@@ -630,11 +633,15 @@ class StrPrinter(Printer):
         }
 
         if expr.rel_op in charmap:
-            return '%s(%s, %s)' % (charmap[expr.rel_op], expr.lhs, expr.rhs)
+            lhs = self._print(expr.lhs)
+            rhs = self._print(expr.rhs)
+            return "%s(%s, %s)" % (charmap[expr.rel_op], lhs, rhs)
 
-        return '%s %s %s' % (self.parenthesize(expr.lhs, precedence(expr)),
-                           self._relationals.get(expr.rel_op) or expr.rel_op,
-                           self.parenthesize(expr.rhs, precedence(expr)))
+        return "%s %s %s" % (
+            self.parenthesize(expr.lhs, precedence(expr)),
+            self._relationals.get(expr.rel_op) or expr.rel_op,
+            self.parenthesize(expr.rhs, precedence(expr)),
+        )
 
     def _print_ComplexRootOf(self, expr):
         return "CRootOf(%s, %d)" % (self._print_Add(expr.expr, order='lex'),

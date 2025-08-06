@@ -13,7 +13,7 @@ from sympy.core.compatibility import as_int, range
 from sympy.core.sympify import sympify, converter
 from sympy.utilities.iterables import iterable
 
-import collections
+from collections.abc import MutableSet
 
 
 class Tuple(Basic):
@@ -268,7 +268,7 @@ class Dict(Basic):
         return tuple(sorted(self.args, key=default_sort_key))
 
 
-class OrderedSet(collections.MutableSet):
+class OrderedSet(MutableSet):
     def __init__(self, iterable=None):
         if iterable:
             self.map = collections.OrderedDict((item, None) for item in iterable)
