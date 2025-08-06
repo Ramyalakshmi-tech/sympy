@@ -52,6 +52,11 @@ def test_PythonCodePrinter():
     assert prntr.doprint(p[0, 1]) == 'p[0, 1]'
     assert prntr.doprint(KroneckerDelta(x,y)) == '(1 if x == y else 0)'
 
+    # Ensure Mod prints with correct precedence when combined with Mul/unary minus
+    a = symbols('a')
+    assert prntr.doprint(a*Mod(x, y)) == 'a*(x % y)'
+    assert prntr.doprint(-Mod(x, y)) == '-(x % y)'
+
 
 def test_PythonCodePrinter_standard():
     import sys

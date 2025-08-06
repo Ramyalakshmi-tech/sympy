@@ -232,6 +232,36 @@ class AbstractPythonCodePrinter(CodePrinter):
     def _print_ComplexInfinity(self, expr):
         return self._print_NaN(expr)
 
+    def parenthesize(self, item, level, strict=False):
+        """
+        Override StrPrinter.parenthesize to account for Python operator
+        precedence differences when SymPy expressions are printed using
+        Python operators.
+
+        In particular, SymPy's Mod is a Function but is printed using the
+        Python `%` operator. In Python, `%` has the same precedence as `*`.
+        Without special handling, Mod would be treated as having function
+        precedence which is higher than multiplication, causing expressions
+        like `expr*Mod(a, b)` to be printed as `expr*a % b`, which Python
+        evaluates as `(expr*a) % b`. We want `expr*(a % b)` instead.
+
+        By treating Mod as having multiplication precedence for the purposes
+        of parenthesization we ensure the generated Python code preserves the
+        intended evaluation order.
+        """
+        from sympy.core.mod import Mod as SympyMod
+        from sympy.printing.precedence import PRECEDENCE
+
+        if isinstance(item, SympyMod):
+            # Treat Mod as a binary operator of multiplication precedence.
+            p = PRECEDENCE["Mul"]
+            if (p < level) or ((not strict) and (p <= level)):
+                return "(%s)" % self._print(item)
+            else:
+                return self._print(item)
+
+        return super().parenthesize(item, level, strict=strict)
+
     def _print_Mod(self, expr):
         PREC = precedence(expr)
         return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
