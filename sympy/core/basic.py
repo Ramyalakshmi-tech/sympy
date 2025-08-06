@@ -1,6 +1,10 @@
 """Base class for all the objects in SymPy"""
 from __future__ import print_function, division
-from collections import Mapping, defaultdict
+from collections import defaultdict
+try:
+    from collections.abc import Mapping
+except ImportError:  # pragma: no cover
+    from collections import Mapping
 from itertools import chain
 
 from .assumptions import BasicMeta, ManagedProperties
