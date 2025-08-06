@@ -496,6 +496,16 @@ class CodePrinter(StrPrinter):
                 b_str[b.index(item.base)] = "(%s)" % b_str[b.index(item.base)]
 
         if not b:
+            # Special case: if the result is a single factor with a leading
+            # negative sign and that factor prints using an operator with the
+            # same precedence as multiplication (e.g. Mod printed as `%`),
+            # Python would evaluate "-factor" by applying the unary minus to
+            # the left operand of that operator. To preserve SymPy semantics
+            # we need parentheses, e.g. "-(a % b)" instead of "-a % b".
+            if sign and len(a) == 1:
+                from sympy.core.mod import Mod as SympyMod
+                if isinstance(a[0], SympyMod):
+                    return sign + "(" + a_str[0] + ")"
             return sign + '*'.join(a_str)
         elif len(b) == 1:
             return sign + '*'.join(a_str) + "/" + b_str[0]

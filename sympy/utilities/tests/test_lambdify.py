@@ -277,6 +277,18 @@ def test_exponentiation():
     assert f(2.5) == 6.25
 
 
+def test_Mod_with_python_modules_precedence():
+    # Regression test for Mod precedence in pure Python lambdify (modules=[])
+    from sympy import Mod
+    a = symbols('a')
+    f = lambdify((a, x, y), a*Mod(x, y), modules=[])
+    # If precedence is wrong, this would compute (a*x) % y
+    assert f(2, 3, 7) == 6
+    # Also check that negation doesn't get pushed inside Mod
+    g = lambdify((x, y), -Mod(x, y), modules=[])
+    assert g(3, 7) == -3
+
+
 def test_sqrt():
     f = lambdify(x, sqrt(x))
     assert f(0) == 0.0
