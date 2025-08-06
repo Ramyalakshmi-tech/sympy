@@ -10,7 +10,7 @@ from sympy import (
     true, false, And, Or, Not, ITE, Min, Max, floor, diff, IndexedBase, Sum,
     DotProduct, Eq, Dummy, sinc, erf, erfc, factorial, gamma, loggamma,
     digamma, RisingFactorial, besselj, bessely, besseli, besselk, S, beta,
-    betainc, betainc_regularized, fresnelc, fresnels)
+    betainc, betainc_regularized, fresnelc, fresnels, Mod)
 from sympy.codegen.cfunctions import expm1, log1p, exp2, log2, log10, hypot
 from sympy.codegen.numpy_nodes import logaddexp, logaddexp2
 from sympy.codegen.scipy_nodes import cosm1
@@ -118,6 +118,13 @@ def test_atoms():
     assert f(0) == 3.14
     f = lambdify(x, I + x, {"I": 1j})
     assert f(1) == 1 + 1j
+
+
+def test_Mod_lambdify_modules_empty():
+    g = lambdify((x, y), -Mod(x, y), modules=[])
+    assert g(3, 7) == -3
+    src = inspect.getsource(g)
+    assert '-(x % y)' in src
 
 #================== Test different modules =========================
 
