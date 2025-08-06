@@ -6,7 +6,7 @@ This module contains python code printers for plain python as well as NumPy & Sc
 from collections import defaultdict
 from itertools import chain
 from sympy.core import S
-from .precedence import precedence
+from .precedence import precedence, PRECEDENCE
 from .codeprinter import CodePrinter
 
 _kw_py2and3 = {
@@ -233,8 +233,11 @@ class AbstractPythonCodePrinter(CodePrinter):
         return self._print_NaN(expr)
 
     def _print_Mod(self, expr):
-        PREC = precedence(expr)
-        return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
+        PREC = PRECEDENCE["Mul"]
+        a, b = expr.args
+        return '({} % {})'.format(
+            self.parenthesize(a, PREC),
+            self.parenthesize(b, PREC))
 
     def _print_Piecewise(self, expr):
         result = []

@@ -7,7 +7,7 @@ from sympy.testing.pytest import raises
 from sympy import (
     symbols, lambdify, sqrt, sin, cos, tan, pi, acos, acosh, Rational,
     Float, Lambda, Piecewise, exp, E, Integral, oo, I, Abs, Function,
-    true, false, And, Or, Not, ITE, Min, Max, floor, diff, IndexedBase, Sum,
+    true, false, And, Or, Not, ITE, Min, Max, Mod, floor, diff, IndexedBase, Sum,
     DotProduct, Eq, Dummy, sinc, erf, erfc, factorial, gamma, loggamma,
     digamma, RisingFactorial, besselj, bessely, besseli, besselk, S, beta,
     betainc, betainc_regularized, fresnelc, fresnels)
@@ -1273,6 +1273,13 @@ def test_issue_13167_21411():
 def test_single_e():
     f = lambdify(x, E)
     assert f(23) == exp(1.0)
+
+
+def test_Mod_modules_empty():
+    f = lambdify((x, y), -Mod(x, y), modules=[])
+    assert f(3, 7) == -3
+    g = lambdify((x, y), 2*Mod(x, y), modules=[])
+    assert g(5, 7) == 10
 
 def test_issue_16536():
     if not scipy:
